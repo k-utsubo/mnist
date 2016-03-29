@@ -1,10 +1,11 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
-# http://tensorflow.classcat.com/2016/02/11/tensorflow-how-tos-visualizing-learning/
+# http://qiita.com/ikki8412/items/95bc81a744dc377d9119
 import tensorflow as tf
 import numpy as np
 import random
 import time
+import math
 
 NUMCLASS=10
 NUMPARAM=784
@@ -71,23 +72,28 @@ x = tf.placeholder(tf.float32, [None, NUMPARAM], name="x-input")
 # 損失とオプティマイザを定義します
 y_ = tf.placeholder(tf.float32, [None, NUMCLASS], name="y-input")
 
-# 重み
-# 訓練画像のpx数の行、ラベル（0-9の数字の個数）数の列の行列
-# 初期値として0を入れておく
-W = tf.Variable(tf.zeros([NUMPARAM, NUMCLASS]), name="weight")
 
-# バイアス
-# ラベル数の列の行列
-# 初期値として0を入れておく
-b = tf.Variable(tf.zeros([NUMCLASS]), name="bias")
+# hidden1
+with tf.name_scope("hidden_layer1") as scope:
+  weights = tf.Variable(tf.truncated_normal([NUMPARAM, 500],
+                          stddev=1.0 / math.sqrt(float(NUMPARAM))),name='weights')
+  biases = tf.Variable(tf.zeros([500]),name='biases')
 
-# ソフトマックス回帰を実行
-# yは入力x（画像）に対しそれがある数字である確率の分布
-# matmul関数で行列xとWの掛け算を行った後、bを加算する。
-# yは[1, 10]の行列
-# name scope を使ってグラフ・ビジュアライザにおけるノードをまとめます。
-with tf.name_scope("Wx_b") as scope:
-  y = tf.nn.softmax(tf.matmul(x, W) + b)
+  hidden1 = tf.nn.sigmoid(tf.matmul(x, weights) + biases)
+# hidden2
+with tf.name_scope("hidden_layer2") as scope:
+  weights = tf.Variable(tf.truncated_normal([500, 300],
+                          stddev=1.0 / math.sqrt(float(500))),name='weights')
+  biases = tf.Variable(tf.zeros([300]),name='biases')
+
+  hidden2 = tf.nn.sigmoid(tf.matmul(hidden1, weights) + biases)
+# softmax layer
+with tf.name_scope("softmax_layer") as scope:
+  weights = tf.Variable(tf.truncated_normal([300, NUMCLASS],
+                          stddev=1.0 / math.sqrt(float(300))),name='weights')
+  biases = tf.Variable(tf.zeros([NUMCLASS]),name='biases')
+
+  y = tf.nn.softmax((tf.matmul(hidden2, weights) + biases))
 
 
 # 更なる name scopes はグラフ表現をクリーンアップしま
@@ -122,6 +128,13 @@ for i in range(20000):
   batch_ys=label_data(train_sample[:,0])
   batch_xs=image_data(train_sample)
   train_accuracy=sess.run(train_step, feed_dict={x: batch_xs, y_:batch_ys})
+#  if i % 100 == 0:
+    # 1 step終わるたびに精度を計算する
+#    print "step %d, training accuracy %g" %(i, train_accuracy)
+
+  # 1 step終わるたびにTensorBoardに表示する値を追加する
+  summary_str=sess.run(summary_op, feed_dict={x: batch_xs, y_:batch_ys})
+  summary_writer.add_summary(summary_str, i)
 print "--- 訓練終了 ---"
 
 # 正しいかの予測
