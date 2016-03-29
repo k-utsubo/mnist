@@ -128,9 +128,6 @@ for i in range(20000):
   batch_ys=label_data(train_sample[:,0])
   batch_xs=image_data(train_sample)
   train_accuracy=sess.run(train_step, feed_dict={x: batch_xs, y_:batch_ys})
-#  if i % 100 == 0:
-    # 1 step終わるたびに精度を計算する
-#    print "step %d, training accuracy %g" %(i, train_accuracy)
 
   # 1 step終わるたびにTensorBoardに表示する値を追加する
   summary_str=sess.run(summary_op, feed_dict={x: batch_xs, y_:batch_ys})

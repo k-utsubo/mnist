@@ -122,6 +122,10 @@ for i in range(20000):
   batch_ys=label_data(train_sample[:,0])
   batch_xs=image_data(train_sample)
   train_accuracy=sess.run(train_step, feed_dict={x: batch_xs, y_:batch_ys})
+
+  # 1 step終わるたびにTensorBoardに表示する値を追加する
+  summary_str=sess.run(summary_op, feed_dict={x: batch_xs, y_:batch_ys})
+  summary_writer.add_summary(summary_str, i)
 print "--- 訓練終了 ---"
 
 # 正しいかの予測
