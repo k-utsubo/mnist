@@ -117,7 +117,7 @@ summary_writer = tf.train.SummaryWriter("/tmp/data", sess.graph_def)
 # 100つでも同じような結果を得ることができる
 # feed_dictでplaceholderに値を入力することができる
 print "--- 訓練開始 ---"
-for i in range(20000):
+for i in range(1000):
   train_sample=np.asarray(random.sample(train,100))
   batch_ys=label_data(train_sample[:,0])
   batch_xs=image_data(train_sample)
@@ -149,8 +149,13 @@ with tf.name_scope("test") as scope:
 # ソフトマックス回帰によってWとbの値が計算されているので、xを入力することでyが計算できる
 test_label=label_data(test[:,0])
 test_image=image_data(test)
+# http://d.hatena.ne.jp/sugyan/20151124/1448292129
 print "精度"
 print(sess.run(accuracy, feed_dict={x: test_image, y_: test_label}))
+
+## save 
+saver = tf.train.Saver([W,b])
+saver.save(sess, "/tmp/tf_regression.ckpt")
 
 # 終了時刻
 end_time = time.time()
